@@ -1,0 +1,18 @@
+[project]
+name = "scholaris"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "latex2mathml>=3.81.0",
+    "markdown>=3.10",
+    "openai>=2.52.0",
+    "paddleocr>=2.10.0",
+    "pypdfium2>=4.30.0",
+    "python-dotenv>=1.2.2",
+    "rapidocr-onnxruntime>=1.4.4",
+    "requests>=2.34.2",
+    "tkinterweb>=4.25.3",
+    "ttkbootstrap>=1.14.2",
+]
