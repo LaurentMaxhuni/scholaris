@@ -1,15 +1,16 @@
 import os
-from openai import OpenAI
 
 from dotenv import load_dotenv
+from openai import OpenAI
 
-from storage import load_json
-from storage import save_json
+from storage import load_json, save_json
 
 load_dotenv()
 
 client = OpenAI(
-    api_key=os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY") or "missing-api-key",
+    api_key=os.getenv("GROQ_API_KEY")
+    or os.getenv("OPENAI_API_KEY")
+    or "missing-api-key",
     base_url=os.getenv("GROQ_API_URL"),
 )
 
@@ -27,11 +28,13 @@ MARKDOWN_INSTRUCTIONS = (
 
 
 def add_to_history(action, prompt, response):
-    history.append({
-        "action": action,
-        "prompt": prompt,
-        "response": response,
-    })
+    history.append(
+        {
+            "action": action,
+            "prompt": prompt,
+            "response": response,
+        }
+    )
     save_json(HISTORY_FILE, history)
 
 
@@ -57,11 +60,7 @@ def summarize_text(text):
 
 
 def answer_questions(text, question):
-    prompt = (
-        f"{MARKDOWN_INSTRUCTIONS}\n\n"
-        f"Context:\n{text}\n\n"
-        f"Question:\n{question}"
-    )
+    prompt = f"{MARKDOWN_INSTRUCTIONS}\n\nContext:\n{text}\n\nQuestion:\n{question}"
     response = client.responses.create(
         input=prompt,
         model="openai/gpt-oss-20b",

@@ -1,27 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 import html
-from pathlib import Path
 import re
 import tkinter as tk
-from tkinter import filedialog
-from tkinter import messagebox
+from collections.abc import Callable
+from pathlib import Path
+from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
 
-from latex2mathml.converter import convert as latex_to_mathml
 import markdown
-from tkinterweb import HtmlFrame
 import ttkbootstrap as ttk
+from latex2mathml.converter import convert as latex_to_mathml
+from tkinterweb import HtmlFrame
 from ttkbootstrap.constants import BOTH, END, LEFT, RIGHT, X
 
-from ai import answer_questions
-from ai import generate_quiz
-from ai import summarize_text
-from pdf_reader import choose_pdf
-from pdf_reader import extract_text_from_pdf
+from ai import answer_questions, generate_quiz, summarize_text
+from pdf_reader import choose_pdf, extract_text_from_pdf
 from storage import load_json
-
 
 Callback = Callable[..., None]
 HISTORY_FILE = Path(__file__).resolve().parent / "data" / "history.json"
@@ -66,13 +61,45 @@ class ScholarisApp(ttk.Window):
         style.configure("Card.TFrame", background=CARD_BG)
         style.configure("Sidebar.TFrame", background="#060b16")
         style.configure("Sidebar.TLabel", background="#060b16", foreground="#f8fafc")
-        style.configure("Muted.Sidebar.TLabel", background="#060b16", foreground=MUTED_FG)
-        style.configure("Hero.TLabel", font=("Segoe UI Semibold", 28), background="#0b1120", foreground="#f8fafc")
-        style.configure("Title.TLabel", font=("Segoe UI Semibold", 16), background=CARD_BG, foreground="#f8fafc")
-        style.configure("Section.TLabel", font=("Segoe UI Semibold", 13), background=CARD_BG, foreground="#f8fafc")
-        style.configure("Body.TLabel", font=("Segoe UI", 10), background=CARD_BG, foreground=MUTED_FG)
-        style.configure("MetricValue.TLabel", font=("Segoe UI Semibold", 18), background=CARD_BG, foreground="#f8fafc")
-        style.configure("MetricLabel.TLabel", font=("Segoe UI", 9), background=CARD_BG, foreground=MUTED_FG)
+        style.configure(
+            "Muted.Sidebar.TLabel", background="#060b16", foreground=MUTED_FG
+        )
+        style.configure(
+            "Hero.TLabel",
+            font=("Segoe UI Semibold", 28),
+            background="#0b1120",
+            foreground="#f8fafc",
+        )
+        style.configure(
+            "Title.TLabel",
+            font=("Segoe UI Semibold", 16),
+            background=CARD_BG,
+            foreground="#f8fafc",
+        )
+        style.configure(
+            "Section.TLabel",
+            font=("Segoe UI Semibold", 13),
+            background=CARD_BG,
+            foreground="#f8fafc",
+        )
+        style.configure(
+            "Body.TLabel",
+            font=("Segoe UI", 10),
+            background=CARD_BG,
+            foreground=MUTED_FG,
+        )
+        style.configure(
+            "MetricValue.TLabel",
+            font=("Segoe UI Semibold", 18),
+            background=CARD_BG,
+            foreground="#f8fafc",
+        )
+        style.configure(
+            "MetricLabel.TLabel",
+            font=("Segoe UI", 9),
+            background=CARD_BG,
+            foreground=MUTED_FG,
+        )
         style.configure("Page.TFrame", background="#111827")
         style.configure("History.Treeview", rowheight=30)
 
@@ -91,8 +118,18 @@ class ScholarisApp(ttk.Window):
         sidebar.configure(width=290)
         sidebar.grid_propagate(False)
 
-        ttk.Label(sidebar, text="Scholaris", style="Sidebar.TLabel", font=("Segoe UI Semibold", 26)).pack(anchor="w")
-        ttk.Label(sidebar, text="AI study workspace", style="Muted.Sidebar.TLabel", font=("Segoe UI", 11)).pack(anchor="w", pady=(4, 20))
+        ttk.Label(
+            sidebar,
+            text="Scholaris",
+            style="Sidebar.TLabel",
+            font=("Segoe UI Semibold", 26),
+        ).pack(anchor="w")
+        ttk.Label(
+            sidebar,
+            text="AI study workspace",
+            style="Muted.Sidebar.TLabel",
+            font=("Segoe UI", 11),
+        ).pack(anchor="w", pady=(4, 20))
 
         feature_box = ttk.Frame(sidebar, style="Sidebar.TFrame")
         feature_box.pack(fill=X, pady=(0, 20))
@@ -106,11 +143,20 @@ class ScholarisApp(ttk.Window):
         for title, subtitle in features:
             item = ttk.Frame(feature_box, style="Sidebar.TFrame", padding=(0, 8))
             item.pack(fill=X)
-            ttk.Label(item, text=title, style="Sidebar.TLabel", font=("Segoe UI Semibold", 11)).pack(anchor="w")
-            ttk.Label(item, text=subtitle, style="Muted.Sidebar.TLabel", font=("Segoe UI", 10)).pack(anchor="w", pady=(2, 0))
+            ttk.Label(
+                item, text=title, style="Sidebar.TLabel", font=("Segoe UI Semibold", 11)
+            ).pack(anchor="w")
+            ttk.Label(
+                item, text=subtitle, style="Muted.Sidebar.TLabel", font=("Segoe UI", 10)
+            ).pack(anchor="w", pady=(2, 0))
 
         ttk.Separator(sidebar, bootstyle="secondary").pack(fill=X, pady=16)
-        ttk.Label(sidebar, text="Pages", style="Sidebar.TLabel", font=("Segoe UI Semibold", 11)).pack(anchor="w", pady=(0, 8))
+        ttk.Label(
+            sidebar,
+            text="Pages",
+            style="Sidebar.TLabel",
+            font=("Segoe UI Semibold", 11),
+        ).pack(anchor="w", pady=(0, 8))
 
         self.nav_buttons: dict[str, ttk.Button] = {}
         for key, label, style_name in [
@@ -120,17 +166,52 @@ class ScholarisApp(ttk.Window):
             ("quiz", "Quiz", "success"),
             ("history", "History", "secondary"),
         ]:
-            button = ttk.Button(sidebar, text=label, bootstyle=f"outline-{style_name}", command=lambda k=key: self._show_page(k))
+            button = ttk.Button(
+                sidebar,
+                text=label,
+                bootstyle=f"outline-{style_name}",
+                command=lambda k=key: self._show_page(k),
+            )
             button.pack(fill=X, pady=4)
             self.nav_buttons[key] = button
 
         ttk.Separator(sidebar, bootstyle="secondary").pack(fill=X, pady=16)
-        ttk.Label(sidebar, text="Quick actions", style="Sidebar.TLabel", font=("Segoe UI Semibold", 11)).pack(anchor="w", pady=(0, 8))
-        ttk.Button(sidebar, text="Browse PDF", bootstyle="light", command=self._handle_browse_pdf).pack(fill=X, pady=4)
-        ttk.Button(sidebar, text="Summarize", bootstyle="primary", command=self._handle_summarize).pack(fill=X, pady=4)
-        ttk.Button(sidebar, text="Generate Quiz", bootstyle="success", command=self._handle_generate_quiz).pack(fill=X, pady=4)
-        ttk.Button(sidebar, text="Save Notes", bootstyle="outline-light", command=self._handle_save_notes).pack(fill=X, pady=4)
-        ttk.Button(sidebar, text="Clear Workspace", bootstyle="outline-light", command=self._handle_clear).pack(fill=X, pady=4)
+        ttk.Label(
+            sidebar,
+            text="Quick actions",
+            style="Sidebar.TLabel",
+            font=("Segoe UI Semibold", 11),
+        ).pack(anchor="w", pady=(0, 8))
+        ttk.Button(
+            sidebar,
+            text="Browse PDF",
+            bootstyle="light",
+            command=self._handle_browse_pdf,
+        ).pack(fill=X, pady=4)
+        ttk.Button(
+            sidebar,
+            text="Summarize",
+            bootstyle="primary",
+            command=self._handle_summarize,
+        ).pack(fill=X, pady=4)
+        ttk.Button(
+            sidebar,
+            text="Generate Quiz",
+            bootstyle="success",
+            command=self._handle_generate_quiz,
+        ).pack(fill=X, pady=4)
+        ttk.Button(
+            sidebar,
+            text="Save Notes",
+            bootstyle="outline-light",
+            command=self._handle_save_notes,
+        ).pack(fill=X, pady=4)
+        ttk.Button(
+            sidebar,
+            text="Clear Workspace",
+            bootstyle="outline-light",
+            command=self._handle_clear,
+        ).pack(fill=X, pady=4)
 
         ttk.Separator(sidebar, bootstyle="secondary").pack(fill=X, pady=16)
         ttk.Label(
@@ -157,7 +238,9 @@ class ScholarisApp(ttk.Window):
         header.grid(row=0, column=0, sticky="ew", pady=(0, 18))
         header.columnconfigure(0, weight=1)
 
-        ttk.Label(header, text="Scholaris workspace", style="Hero.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(header, text="Scholaris workspace", style="Hero.TLabel").grid(
+            row=0, column=0, sticky="w"
+        )
         ttk.Label(
             header,
             text="Separate pages for document review, markdown summaries, Q&A, quizzes, and history.",
@@ -166,8 +249,18 @@ class ScholarisApp(ttk.Window):
 
         actions = ttk.Frame(header, style="App.TFrame")
         actions.grid(row=0, column=1, rowspan=2, sticky="e")
-        ttk.Button(actions, text="Summary Page", bootstyle="primary", command=lambda: self._show_page("summary")).pack(side=LEFT, padx=(0, 8))
-        ttk.Button(actions, text="History Page", bootstyle="outline-light", command=lambda: self._show_page("history")).pack(side=LEFT)
+        ttk.Button(
+            actions,
+            text="Summary Page",
+            bootstyle="primary",
+            command=lambda: self._show_page("summary"),
+        ).pack(side=LEFT, padx=(0, 8))
+        ttk.Button(
+            actions,
+            text="History Page",
+            bootstyle="outline-light",
+            command=lambda: self._show_page("history"),
+        ).pack(side=LEFT)
 
     def _build_metrics(self, parent: ttk.Frame) -> None:
         metrics = ttk.Frame(parent, style="App.TFrame")
@@ -176,9 +269,13 @@ class ScholarisApp(ttk.Window):
 
         self.file_metric = self._metric_card(metrics, 0, "Source file", "No file")
         self.summary_metric = self._metric_card(metrics, 1, "Summary status", "Waiting")
-        self.quiz_metric = self._metric_card(metrics, 2, "Quiz items", str(self.quiz_count.get()))
+        self.quiz_metric = self._metric_card(
+            metrics, 2, "Quiz items", str(self.quiz_count.get())
+        )
 
-    def _metric_card(self, parent: ttk.Frame, column: int, label: str, value: str) -> ttk.Label:
+    def _metric_card(
+        self, parent: ttk.Frame, column: int, label: str, value: str
+    ) -> ttk.Label:
         card = ttk.Frame(parent, style="Card.TFrame", padding=18)
         card.grid(row=0, column=column, sticky="ew", padx=(0 if column == 0 else 8, 0))
         ttk.Label(card, text=label, style="MetricLabel.TLabel").pack(anchor="w")
@@ -213,15 +310,28 @@ class ScholarisApp(ttk.Window):
         card.rowconfigure(3, weight=1)
         card.columnconfigure(0, weight=1)
 
-        self._page_title(card, "Document source", "Load a PDF and inspect the extracted text before running AI tools.")
+        self._page_title(
+            card,
+            "Document source",
+            "Load a PDF and inspect the extracted text before running AI tools.",
+        )
 
         file_row = ttk.Frame(card, style="Card.TFrame")
         file_row.grid(row=1, column=0, sticky="ew", pady=(0, 16))
         file_row.columnconfigure(0, weight=1)
-        ttk.Entry(file_row, textvariable=self.selected_file, state="readonly").grid(row=0, column=0, sticky="ew", padx=(0, 10))
-        ttk.Button(file_row, text="Browse PDF", bootstyle="info", command=self._handle_browse_pdf).grid(row=0, column=1)
+        ttk.Entry(file_row, textvariable=self.selected_file, state="readonly").grid(
+            row=0, column=0, sticky="ew", padx=(0, 10)
+        )
+        ttk.Button(
+            file_row,
+            text="Browse PDF",
+            bootstyle="info",
+            command=self._handle_browse_pdf,
+        ).grid(row=0, column=1)
 
-        ttk.Label(card, text="Extracted text", style="Section.TLabel").grid(row=2, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(card, text="Extracted text", style="Section.TLabel").grid(
+            row=2, column=0, sticky="w", pady=(0, 8)
+        )
         self.source_text = self._build_textbox(card, font=("Cascadia Code", 10))
         self.source_text.grid(row=3, column=0, sticky="nsew")
 
@@ -234,12 +344,26 @@ class ScholarisApp(ttk.Window):
         card.columnconfigure(0, weight=1)
         card.rowconfigure(2, weight=1)
 
-        self._page_title(card, "Markdown study notes", "Generate notes and see both raw markdown and rendered preview.")
+        self._page_title(
+            card,
+            "Markdown study notes",
+            "Generate notes and see both raw markdown and rendered preview.",
+        )
 
         controls = ttk.Frame(card, style="Card.TFrame")
         controls.grid(row=1, column=0, sticky="ew", pady=(0, 16))
-        ttk.Button(controls, text="Generate Summary", bootstyle="primary", command=self._handle_summarize).pack(side=LEFT)
-        ttk.Button(controls, text="Save Notes", bootstyle="outline-light", command=self._handle_save_notes).pack(side=LEFT, padx=8)
+        ttk.Button(
+            controls,
+            text="Generate Summary",
+            bootstyle="primary",
+            command=self._handle_summarize,
+        ).pack(side=LEFT)
+        ttk.Button(
+            controls,
+            text="Save Notes",
+            bootstyle="outline-light",
+            command=self._handle_save_notes,
+        ).pack(side=LEFT, padx=8)
 
         panel = ttk.Panedwindow(card, orient="horizontal")
         panel.grid(row=2, column=0, sticky="nsew")
@@ -247,15 +371,24 @@ class ScholarisApp(ttk.Window):
         editor_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         editor_frame.columnconfigure(0, weight=1)
         editor_frame.rowconfigure(1, weight=1)
-        ttk.Label(editor_frame, text="Raw markdown", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(editor_frame, text="Raw markdown", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
         self.summary_text = self._build_textbox(editor_frame)
         self.summary_text.grid(row=1, column=0, sticky="nsew")
-        self.summary_text.bind("<KeyRelease>", lambda _event: self._refresh_markdown_preview(self.summary_preview, self.summary_text.get("1.0", END)))
+        self.summary_text.bind(
+            "<KeyRelease>",
+            lambda _event: self._refresh_markdown_preview(
+                self.summary_preview, self.summary_text.get("1.0", END)
+            ),
+        )
 
         preview_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         preview_frame.columnconfigure(0, weight=1)
         preview_frame.rowconfigure(1, weight=1)
-        ttk.Label(preview_frame, text="Rendered preview", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(preview_frame, text="Rendered preview", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
         self.summary_preview = self._build_preview_frame(preview_frame)
         self.summary_preview.grid(row=1, column=0, sticky="nsew")
 
@@ -271,13 +404,21 @@ class ScholarisApp(ttk.Window):
         card.columnconfigure(0, weight=1)
         card.rowconfigure(3, weight=1)
 
-        self._page_title(card, "Document Q&A", "Ask focused questions against the currently loaded source document.")
+        self._page_title(
+            card,
+            "Document Q&A",
+            "Ask focused questions against the currently loaded source document.",
+        )
 
         prompt_row = ttk.Frame(card, style="Card.TFrame")
         prompt_row.grid(row=1, column=0, sticky="ew", pady=(0, 14))
         prompt_row.columnconfigure(0, weight=1)
-        ttk.Entry(prompt_row, textvariable=self.question_text).grid(row=0, column=0, sticky="ew", padx=(0, 10))
-        ttk.Button(prompt_row, text="Ask", bootstyle="warning", command=self._handle_ask).grid(row=0, column=1)
+        ttk.Entry(prompt_row, textvariable=self.question_text).grid(
+            row=0, column=0, sticky="ew", padx=(0, 10)
+        )
+        ttk.Button(
+            prompt_row, text="Ask", bootstyle="warning", command=self._handle_ask
+        ).grid(row=0, column=1)
 
         panel = ttk.Panedwindow(card, orient="horizontal")
         panel.grid(row=3, column=0, sticky="nsew")
@@ -285,15 +426,24 @@ class ScholarisApp(ttk.Window):
         answer_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         answer_frame.columnconfigure(0, weight=1)
         answer_frame.rowconfigure(1, weight=1)
-        ttk.Label(answer_frame, text="Answer markdown", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(answer_frame, text="Answer markdown", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
         self.answer_text = self._build_textbox(answer_frame)
         self.answer_text.grid(row=1, column=0, sticky="nsew")
-        self.answer_text.bind("<KeyRelease>", lambda _event: self._refresh_markdown_preview(self.answer_preview, self.answer_text.get("1.0", END)))
+        self.answer_text.bind(
+            "<KeyRelease>",
+            lambda _event: self._refresh_markdown_preview(
+                self.answer_preview, self.answer_text.get("1.0", END)
+            ),
+        )
 
         preview_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         preview_frame.columnconfigure(0, weight=1)
         preview_frame.rowconfigure(1, weight=1)
-        ttk.Label(preview_frame, text="Rendered preview", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(preview_frame, text="Rendered preview", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
         self.answer_preview = self._build_preview_frame(preview_frame)
         self.answer_preview.grid(row=1, column=0, sticky="nsew")
 
@@ -309,13 +459,24 @@ class ScholarisApp(ttk.Window):
         card.columnconfigure(0, weight=1)
         card.rowconfigure(3, weight=1)
 
-        self._page_title(card, "Quiz builder", "Generate quiz material and preview it as rendered markdown.")
+        self._page_title(
+            card,
+            "Quiz builder",
+            "Generate quiz material and preview it as rendered markdown.",
+        )
 
         controls = ttk.Frame(card, style="Card.TFrame")
         controls.grid(row=1, column=0, sticky="ew", pady=(0, 14))
         ttk.Label(controls, text="Questions:", style="Body.TLabel").pack(side=LEFT)
-        ttk.Spinbox(controls, from_=3, to=20, textvariable=self.quiz_count, width=6).pack(side=LEFT, padx=8)
-        ttk.Button(controls, text="Build Quiz", bootstyle="success", command=self._handle_generate_quiz).pack(side=RIGHT)
+        ttk.Spinbox(
+            controls, from_=3, to=20, textvariable=self.quiz_count, width=6
+        ).pack(side=LEFT, padx=8)
+        ttk.Button(
+            controls,
+            text="Build Quiz",
+            bootstyle="success",
+            command=self._handle_generate_quiz,
+        ).pack(side=RIGHT)
 
         panel = ttk.Panedwindow(card, orient="horizontal")
         panel.grid(row=3, column=0, sticky="nsew")
@@ -323,15 +484,24 @@ class ScholarisApp(ttk.Window):
         quiz_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         quiz_frame.columnconfigure(0, weight=1)
         quiz_frame.rowconfigure(1, weight=1)
-        ttk.Label(quiz_frame, text="Quiz markdown", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(quiz_frame, text="Quiz markdown", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
         self.quiz_text = self._build_textbox(quiz_frame)
         self.quiz_text.grid(row=1, column=0, sticky="nsew")
-        self.quiz_text.bind("<KeyRelease>", lambda _event: self._refresh_markdown_preview(self.quiz_preview, self.quiz_text.get("1.0", END)))
+        self.quiz_text.bind(
+            "<KeyRelease>",
+            lambda _event: self._refresh_markdown_preview(
+                self.quiz_preview, self.quiz_text.get("1.0", END)
+            ),
+        )
 
         preview_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         preview_frame.columnconfigure(0, weight=1)
         preview_frame.rowconfigure(1, weight=1)
-        ttk.Label(preview_frame, text="Rendered preview", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(preview_frame, text="Rendered preview", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
         self.quiz_preview = self._build_preview_frame(preview_frame)
         self.quiz_preview.grid(row=1, column=0, sticky="nsew")
 
@@ -347,11 +517,20 @@ class ScholarisApp(ttk.Window):
         card.columnconfigure(0, weight=1)
         card.rowconfigure(2, weight=1)
 
-        self._page_title(card, "History", "Review saved AI outputs without touching the underlying logic.")
+        self._page_title(
+            card,
+            "History",
+            "Review saved AI outputs without touching the underlying logic.",
+        )
 
         toolbar = ttk.Frame(card, style="Card.TFrame")
         toolbar.grid(row=1, column=0, sticky="ew", pady=(0, 14))
-        ttk.Button(toolbar, text="Refresh History", bootstyle="outline-info", command=self.refresh_history).pack(side=LEFT)
+        ttk.Button(
+            toolbar,
+            text="Refresh History",
+            bootstyle="outline-info",
+            command=self.refresh_history,
+        ).pack(side=LEFT)
 
         panel = ttk.Panedwindow(card, orient="horizontal")
         panel.grid(row=2, column=0, sticky="nsew")
@@ -359,7 +538,9 @@ class ScholarisApp(ttk.Window):
         list_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         list_frame.columnconfigure(0, weight=1)
         list_frame.rowconfigure(1, weight=1)
-        ttk.Label(list_frame, text="Entries", style="Section.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ttk.Label(list_frame, text="Entries", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
 
         self.history_tree = ttk.Treeview(
             list_frame,
@@ -378,8 +559,14 @@ class ScholarisApp(ttk.Window):
         preview_frame = ttk.Frame(panel, style="Card.TFrame", padding=12)
         preview_frame.columnconfigure(0, weight=1)
         preview_frame.rowconfigure(2, weight=1)
-        ttk.Label(preview_frame, text="Entry detail", style="Section.TLabel").grid(row=0, column=0, sticky="w")
-        self.history_meta = ttk.Label(preview_frame, text="Select a history item to preview it.", style="Body.TLabel")
+        ttk.Label(preview_frame, text="Entry detail", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w"
+        )
+        self.history_meta = ttk.Label(
+            preview_frame,
+            text="Select a history item to preview it.",
+            style="Body.TLabel",
+        )
         self.history_meta.grid(row=1, column=0, sticky="w", pady=(6, 10))
         self.history_preview = self._build_preview_frame(preview_frame)
         self.history_preview.grid(row=2, column=0, sticky="nsew")
@@ -404,9 +591,13 @@ class ScholarisApp(ttk.Window):
         header = ttk.Frame(parent, style="Card.TFrame")
         header.grid(row=0, column=0, sticky="ew", pady=(0, 16))
         ttk.Label(header, text=title, style="Title.TLabel").pack(anchor="w")
-        ttk.Label(header, text=subtitle, style="Body.TLabel").pack(anchor="w", pady=(6, 0))
+        ttk.Label(header, text=subtitle, style="Body.TLabel").pack(
+            anchor="w", pady=(6, 0)
+        )
 
-    def _build_textbox(self, parent: ttk.Frame, font: tuple[str, int] = ("Segoe UI", 10)) -> ScrolledText:
+    def _build_textbox(
+        self, parent: ttk.Frame, font: tuple[str, int] = ("Segoe UI", 10)
+    ) -> ScrolledText:
         return ScrolledText(
             parent,
             wrap="word",
@@ -428,8 +619,12 @@ class ScholarisApp(ttk.Window):
     def _build_statusbar(self, parent: ttk.Frame) -> None:
         statusbar = ttk.Frame(parent, style="App.TFrame")
         statusbar.grid(row=3, column=0, sticky="ew", pady=(14, 0))
-        ttk.Label(statusbar, textvariable=self.status_text, style="Body.TLabel").pack(side=LEFT)
-        ttk.Label(statusbar, textvariable=self.progress_text, style="Body.TLabel").pack(side=RIGHT)
+        ttk.Label(statusbar, textvariable=self.status_text, style="Body.TLabel").pack(
+            side=LEFT
+        )
+        ttk.Label(statusbar, textvariable=self.progress_text, style="Body.TLabel").pack(
+            side=RIGHT
+        )
 
     def _show_page(self, key: str) -> None:
         tab_id = self.page_tabs.get(key)
@@ -453,7 +648,9 @@ class ScholarisApp(ttk.Window):
             "history": "secondary",
         }
         for key, button in self.nav_buttons.items():
-            button.configure(bootstyle=active_styles[key] if key == active_key else styles[key])
+            button.configure(
+                bootstyle=active_styles[key] if key == active_key else styles[key]
+            )
 
     def _handle_tab_change(self, _event: object) -> None:
         selected = self.main_tabs.select()
@@ -599,7 +796,11 @@ class ScholarisApp(ttk.Window):
         file_path = filedialog.asksaveasfilename(
             title="Save Notes",
             defaultextension=".md",
-            filetypes=[("Markdown files", "*.md"), ("Text files", "*.txt"), ("All files", "*.*")],
+            filetypes=[
+                ("Markdown files", "*.md"),
+                ("Text files", "*.txt"),
+                ("All files", "*.*"),
+            ],
         )
         if not file_path:
             return
@@ -622,7 +823,9 @@ class ScholarisApp(ttk.Window):
         action = entry.get("action", "unknown")
         prompt = entry.get("prompt", "")
         response = entry.get("response", "")
-        self.history_meta.configure(text=f"Action: {action} | Prompt length: {len(prompt)}")
+        self.history_meta.configure(
+            text=f"Action: {action} | Prompt length: {len(prompt)}"
+        )
 
         detail_markdown = (
             f"## {action.title()}\n\n"
@@ -645,7 +848,9 @@ class ScholarisApp(ttk.Window):
             prompt = str(entry.get("prompt", "")).replace("\n", " ").strip()
             prompt_preview = (prompt[:80] + "...") if len(prompt) > 80 else prompt
             item_id = f"history-{index}"
-            self.history_tree.insert("", "end", iid=item_id, values=(action, prompt_preview))
+            self.history_tree.insert(
+                "", "end", iid=item_id, values=(action, prompt_preview)
+            )
             self.history_lookup[item_id] = entry
 
     def set_selected_file(self, file_path: str) -> None:
@@ -675,7 +880,12 @@ class ScholarisApp(ttk.Window):
         self._refresh_markdown_preview(self.quiz_preview, content)
 
     def clear_textboxes(self) -> None:
-        for textbox in (self.source_text, self.summary_text, self.answer_text, self.quiz_text):
+        for textbox in (
+            self.source_text,
+            self.summary_text,
+            self.answer_text,
+            self.quiz_text,
+        ):
             textbox.delete("1.0", END)
 
     @staticmethod
@@ -689,7 +899,9 @@ class ScholarisApp(ttk.Window):
 
     def _markdown_to_html(self, content: str) -> str:
         processed, math_tokens = self._extract_math_tokens(content)
-        body = markdown.markdown(processed, extensions=["fenced_code", "tables", "nl2br"])
+        body = markdown.markdown(
+            processed, extensions=["fenced_code", "tables", "nl2br"]
+        )
         for token, replacement in math_tokens.items():
             body = body.replace(token, replacement)
 
@@ -735,7 +947,9 @@ class ScholarisApp(ttk.Window):
             return token
 
         processed = re.sub(r"\$\$(.*?)\$\$", replace_block, content, flags=re.DOTALL)
-        processed = re.sub(r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)", replace_inline, processed)
+        processed = re.sub(
+            r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)", replace_inline, processed
+        )
         return processed, tokens
 
     def _math_inline_html(self, expression: str) -> str:
